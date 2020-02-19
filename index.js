@@ -28,8 +28,8 @@ async function getStats() {
 
         new ReportRenameAction(jsDom, filepath).run();
 
-        // let cashFlow = new ReportGetCashFlowAction(jsDom, filepath).run();
-        // cashFlows.push(cashFlow);
+        let cashFlow = new ReportGetCashFlowAction(jsDom, filepath).run();
+        cashFlows.push(cashFlow);
 
         const trades = new ReportGetTradesAction(jsDom).run();
         if (trades.length) {
