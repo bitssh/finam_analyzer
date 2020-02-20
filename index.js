@@ -5,7 +5,13 @@ const {ReportGetTradesAction} = require("./ReportGetTradesAction");
 const {ReportGetCashFlowAction} = require("./ReportGetCashFlowAction");
 const {JSDOM} = jsdom;
 
-const fileCountLimit = 10;
+const ANALYZE_FILE_COUNT_LIMIT = 10;
+
+const ENABLED_ACTIONS = {
+    reportsRenaming: 1,
+    tradesGetting: 1,
+    cashFlowGetting: 1,
+};
 
 function loadJsDom(filepath) {
     return JSDOM.fromFile(filepath);
@@ -27,10 +33,10 @@ function logCashFlows(cashFlows) {
     }
 }
 
-async function getStats() {
+async function runAnalyzing() {
     const folder = 'C:\\Users\\Ilya\\Downloads\\мик 2019';
     const cashFlows = [];
-    const files = fs.readdirSync(folder).slice(-fileCountLimit);
+    const files = fs.readdirSync(folder).slice(-ANALYZE_FILE_COUNT_LIMIT);
 
     let fileNo = 0;
 
@@ -38,12 +44,18 @@ async function getStats() {
         let filepath = `${folder}\\${file}`;
         let jsDom = await loadJsDom(filepath);
 
-        new ReportRenameAction(jsDom, filepath).tryRun();
+        if (ENABLED_ACTIONS.reportsRenaming) {
+            new ReportRenameAction(jsDom, filepath).tryRun();
+        }
 
-        let cashFlow = new ReportGetCashFlowAction(jsDom).tryRun();
-        cashFlows.push(cashFlow);
+        if (ENABLED_ACTIONS.cashFlowGetting) {
+            let cashFlow = new ReportGetCashFlowAction(jsDom).tryRun();
+            cashFlows.push(cashFlow);
+        }
 
-        const trades = new ReportGetTradesAction(jsDom).tryRun();
+        if (ENABLED_ACTIONS.tradesGetting) {
+            const trades = new ReportGetTradesAction(jsDom).tryRun();
+        }
 
         console.log(files.length - fileNo, filepath);
         fileNo += 1;
@@ -52,7 +64,7 @@ async function getStats() {
     logCashFlows(cashFlows);
 }
 
-getStats().then(() => {
+runAnalyzing().then(() => {
     console.log('done');
 });
 
