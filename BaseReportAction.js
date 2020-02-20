@@ -1,23 +1,35 @@
-const jsdom = require("jsdom");
-
-const getDomValue = (dom, xPath) => dom.window.document.evaluate(xPath, dom.window.document, null, 2)._value;
+const jsdomHelper = require('./jsdomHelper');
 
 class BaseReportAction {
     constructor(jsDom) {
-        this.reportDom = jsDom;
+        this.xpathEvaluator = new jsdomHelper.XPathEvaluatorHelper(jsDom);
     }
 
     getReportValue (xPath) {
-        return getDomValue(this.reportDom, xPath);
+        return this.xpathEvaluator.evaluateStringValue(xPath);
+    }
+
+    getReportNode (xPath) {
+        return this.xpathEvaluator.evaluateValue(xPath);
     }
 
     get reportName () {
-        return this.getReportValue('/html/body/table[1]/tbody/tr[1]/td[2]/strong');
+        if (!this._reportName) {
+            this._reportName = this.getReportValue('/html/body/table[1]/tbody/tr[1]/td[2]/strong');
+        }
+        return this._reportName;
     }
 
     run () {
     }
-}
 
+    tryRun () {
+        try {
+            return this.run();
+        } catch (err) {
+            console.error(`running ${this.constructor.name} on "${this.reportName}" failed: ${err.message}`);
+        }
+    }
+}
 
 exports.BaseReportAction = BaseReportAction;

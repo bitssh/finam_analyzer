@@ -1,59 +1,82 @@
 const {BaseReportAction} = require('./BaseReportAction');
+const _ = require('lodash');
 
-const REPORT_TRADES_COLUMN_INDEXES = {
-    Date: 1,
-    Time: 2,
-    Market: 3,
-    Summary: 3,
-    Code: 4,
-    Operation: 5,
-    Count: 6,
-    Price: 7,
-    Fee: 10,
-    Margin: 11,
-    GO: 12,
-    Currency: 13,
-    TradeNo: 17,
+const REPORT_TRADES_COLUMNS = [
+    'date',
+    'time',
+    'market',
+    'code',
+    'operation',
+    'count',
+    'unit',
+    'fee',
+    'margin',
+    'go',
+    'currency',
+    'due_date',
+    'platform',
+    'orderNo',
+    'tradeNo',
+    'comment'
+];
+
+const colIndex = columnName => {
+    if (columnName === REPORT_TRADES_COLUMN_SUMMARY.name) {
+        return REPORT_TRADES_COLUMN_SUMMARY.index;
+    }
+    return REPORT_TRADES_COLUMNS.findIndex((column) => column === columnName);
 };
 
-const REPORT_TRADES_COLUMN_SUMMARY_TEXT = 'ИТОГО:';
+const REPORT_TRADES_COLUMN_SUMMARY = {
+    index: 3,
+    name: 'summary',
+    text: 'ИТОГО:',
+};
 
-const REPORT_TRADES_TABLE_TBODY_XPATH = '/html/body/table[8]/tbody/';
+const REPORT_TRADES_TABLE_TBODY_XPATH = '/html/body/table[8]/tbody';
+
+function getRowCellValue(rowNode, columnName) {
+    const cell = rowNode.cells[colIndex(columnName)];
+    return cell ? cell.textContent : null;
+}
 
 class ReportGetTradesAction extends BaseReportAction {
 
     constructor(...args) {
         super(...args);
-        this.currencies = '';
-
+        this.tradesTableNode = this.getTradesTableNode();
     }
 
-    getTradeValue(row, col) {
-        return this.getReportValue(`${REPORT_TRADES_TABLE_TBODY_XPATH}/tr[${row}]/th[${col}]`);
+    validateTradeTable() {
+        if (!this.tradesTableNode) {
+            throw new Error('trade table not found');
+        }
+        const headerRow = _.get(this.tradesTableNode, 'rows[0]');
+        if (!headerRow || getRowCellValue(headerRow, 'date') !== 'Дата сделки') {
+            throw new Error('trade date column not found');
+        }
+    }
+    getTradesTableNode() {
+        const xpathResult = this.getReportNode(REPORT_TRADES_TABLE_TBODY_XPATH);
+        if (xpathResult && xpathResult.nodes && xpathResult.nodes[0]) {
+            return xpathResult.nodes[0];
+        }
+        return null;
     }
 
     run() {
+        this.validateTradeTable();
         const trades = [];
-        let row = {};
-        const tradeDateColumnName = this.getTradeValue(1, REPORT_TRADES_COLUMN_INDEXES.Date);
-        if (tradeDateColumnName) {
-            let rowIndex = 1;
-            do {
-                rowIndex += 1;
-                row.date = this.getTradeValue(rowIndex, REPORT_TRADES_COLUMN_INDEXES.Date);
-                row.code = this.getTradeValue(rowIndex, REPORT_TRADES_COLUMN_INDEXES.Code);
-                row.price = this.getTradeValue(rowIndex, REPORT_TRADES_COLUMN_INDEXES.Price);
-                console.log(row);
-                if (row.date === '') {
-                    const summaryText = this.getTradeValue(rowIndex, REPORT_TRADES_COLUMN_INDEXES.Summary);
-                    if (summaryText !== REPORT_TRADES_COLUMN_SUMMARY_TEXT) {
-                        console.error(summaryText, 'Trades "summary" cell not found in report ' + this.reportName);
-                    }
-                    break;
-                }
-                trades.push(row);
-            } while (true);
-
+        for (let i = 1; i < this.tradesTableNode.rows.length; i += 1) {
+            let trade = {};
+            const row = this.tradesTableNode.rows[i];
+            if (getRowCellValue(row, 'summary') === REPORT_TRADES_COLUMN_SUMMARY.text) {
+                break;
+            }
+            for (let column of REPORT_TRADES_COLUMNS) {
+                trade[column] = getRowCellValue(row, column);
+            }
+            trades.push(trade);
         }
         return trades;
 

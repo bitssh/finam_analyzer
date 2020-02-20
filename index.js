@@ -4,40 +4,15 @@ const {ReportRenameAction} = require("./ReportRenameAction");
 const {ReportGetTradesAction} = require("./ReportGetTradesAction");
 const {ReportGetCashFlowAction} = require("./ReportGetCashFlowAction");
 const {JSDOM} = jsdom;
-const folder = 'C:\\Users\\Ilya\\Downloads\\мик 2019';
-const cashFlows = [];
-const files = fs.readdirSync(folder);
+
+const fileCountLimit = 10;
 
 function loadJsDom(filepath) {
     return JSDOM.fromFile(filepath);
 }
 
-async function getStats() {
-    let fileNo = 0;
-
-    for (let file of files) {
-        console.log(files.length - fileNo, file);
-        fileNo += 1;
-
-        if (fileNo === 10) {
-            break;
-        }
-
-        let filepath = `${folder}\\${file}`;
-        let jsDom = await loadJsDom(filepath);
-
-        new ReportRenameAction(jsDom, filepath).run();
-
-        let cashFlow = new ReportGetCashFlowAction(jsDom, filepath).run();
-        cashFlows.push(cashFlow);
-
-        const trades = new ReportGetTradesAction(jsDom).run();
-        if (trades.length) {
-            console.log(trades);
-        }
-    }
-
-    if (cashFlows) {
+function logCashFlows(cashFlows) {
+    if (cashFlows && cashFlows.length) {
 
         cashFlows.sort((data1, data2) => {
             return +data1.reportName.substring(4) - +data2.reportName.substring(4);
@@ -50,6 +25,31 @@ async function getStats() {
             console.log(`${item.reportName}\t${item.margin}\t${item.incoming}\t${item.outgoing}\t${item.currencies}`);
         }
     }
+}
+
+async function getStats() {
+    const folder = 'C:\\Users\\Ilya\\Downloads\\мик 2019';
+    const cashFlows = [];
+    const files = fs.readdirSync(folder).slice(-fileCountLimit);
+
+    let fileNo = 0;
+
+    for (let file of files) {
+        let filepath = `${folder}\\${file}`;
+        let jsDom = await loadJsDom(filepath);
+
+        new ReportRenameAction(jsDom, filepath).tryRun();
+
+        let cashFlow = new ReportGetCashFlowAction(jsDom).tryRun();
+        cashFlows.push(cashFlow);
+
+        const trades = new ReportGetTradesAction(jsDom).tryRun();
+
+        console.log(files.length - fileNo, filepath);
+        fileNo += 1;
+    }
+
+    logCashFlows(cashFlows);
 }
 
 getStats().then(() => {
