@@ -35,8 +35,6 @@ const REPORT_TRADES_COLUMN_SUMMARY = {
     text: 'ИТОГО:',
 };
 
-const REPORT_TRADES_TABLE_TBODY_XPATH = '/html/body/table[8]/tbody';
-
 function getRowCellValue(rowNode, columnName) {
     const cell = rowNode.cells[colIndex(columnName)];
     return cell ? cell.textContent : null;
@@ -46,7 +44,7 @@ class ReportGetTradesAction extends BaseReportAction {
 
     constructor(...args) {
         super(...args);
-        this.tradesTableNode = this.getTradesTableNode();
+        this.tradesTableNode = this.getReportTableNode('Торговые движения ПФИ, в т.ч. Комиссии');
     }
 
     validateTradeTable() {
@@ -57,13 +55,6 @@ class ReportGetTradesAction extends BaseReportAction {
         if (!headerRow || getRowCellValue(headerRow, 'date') !== 'Дата сделки') {
             throw new Error('trade date column not found');
         }
-    }
-    getTradesTableNode() {
-        const xpathResult = this.getReportNode(REPORT_TRADES_TABLE_TBODY_XPATH);
-        if (xpathResult && xpathResult.nodes && xpathResult.nodes[0]) {
-            return xpathResult.nodes[0];
-        }
-        return null;
     }
 
     run() {
