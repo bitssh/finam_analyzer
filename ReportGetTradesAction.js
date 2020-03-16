@@ -1,7 +1,7 @@
-const {BaseReportAction} = require('./BaseReportAction');
+const {BaseReportTableReadAction} = require('./BaseReportTableReadAction');
 const _ = require('lodash');
 
-const REPORT_TRADES_COLUMNS = [
+const TRADE_FIELDS = [
     'date',
     'time',
     'market',
@@ -22,57 +22,43 @@ const REPORT_TRADES_COLUMNS = [
     'comment'
 ];
 
-const colIndex = columnName => {
-    if (columnName === REPORT_TRADES_COLUMN_SUMMARY.name) {
-        return REPORT_TRADES_COLUMN_SUMMARY.index;
-    }
-    return REPORT_TRADES_COLUMNS.findIndex((column) => column === columnName);
-};
 
-const REPORT_TRADES_COLUMN_SUMMARY = {
+const TRADE_FIELDS_SUMMARY = {
     index: 3,
     name: 'summary',
     text: 'ИТОГО:',
 };
 
-function getRowCellValue(rowNode, columnName) {
-    const cell = rowNode.cells[colIndex(columnName)];
-    return cell ? cell.textContent : null;
-}
-
-class ReportGetTradesAction extends BaseReportAction {
+class ReportGetTradesAction extends BaseReportTableReadAction {
 
     constructor(...args) {
         super(...args);
-        this.tradesTableNode = this.getReportTableNode('Торговые движения ПФИ, в т.ч. Комиссии');
     }
-
-    validateTradeTable() {
-        if (!this.tradesTableNode) {
-            throw new Error('trade table not found');
+    getTableCaptionNodeText() {
+        return 'Торговые движения ПФИ, в т.ч. Комиссии';
+    }
+    getRecordFieldNames () {
+        return TRADE_FIELDS;
+    }
+    getColIndex (columnName) {
+        if (columnName === TRADE_FIELDS_SUMMARY.name) {
+            return TRADE_FIELDS_SUMMARY.index;
         }
-        const headerRow = _.get(this.tradesTableNode, 'rows[0]');
-        if (!headerRow || getRowCellValue(headerRow, 'date') !== 'Дата сделки') {
+        return super.getColIndex(columnName);
+    }
+    validateTable() {
+        super.validateTable();
+
+        const headerRow = _.get(this.getReportTableNode, 'rows[0]');
+        if (!headerRow || this.getRowCellValue(headerRow, 'date') !== 'Дата сделки') {
             throw new Error('trade date column not found');
         }
     }
-
-    run() {
-        this.validateTradeTable();
-        const trades = [];
-        for (let i = 1; i < this.tradesTableNode.rows.length; i += 1) {
-            let trade = {};
-            const row = this.tradesTableNode.rows[i];
-            if (getRowCellValue(row, 'summary') === REPORT_TRADES_COLUMN_SUMMARY.text) {
-                break;
-            }
-            for (let column of REPORT_TRADES_COLUMNS) {
-                trade[column] = getRowCellValue(row, column);
-            }
-            trades.push(trade);
+    readRow (row) {
+        if (this.getRowCellValue(row, 'summary') === TRADE_FIELDS_SUMMARY.text) {
+            return {doBreak: true};
         }
-        return trades;
-
+        return super.readRow(row);
     }
 }
 

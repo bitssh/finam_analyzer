@@ -1,5 +1,4 @@
 const jsdomHelper = require('./jsdomHelper');
-const _ = require('lodash');
 
 class BaseReportAction {
     constructor(jsDom) {
@@ -8,11 +7,6 @@ class BaseReportAction {
 
     getReportValue (xPath) {
         return this.xpathEvaluator.evaluateStringValue(xPath);
-    }
-
-    getReportTableNode (tableCaption) {
-        const captionNode = this.getReportNode(`/html/body/*[text()="${tableCaption}"]`);
-        return _.get(captionNode, 'nodes[0].nextSibling');
     }
 
     getReportNode (xPath) {

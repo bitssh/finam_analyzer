@@ -2,15 +2,19 @@ const jsdom = require("jsdom");
 const fs = require('fs');
 const {ReportRenameAction} = require("./ReportRenameAction");
 const {ReportGetTradesAction} = require("./ReportGetTradesAction");
+const {ReportGetOperationsAction} = require("./ReportGetOperationsAction");
 const {ReportGetCashFlowAction} = require("./ReportGetCashFlowAction");
 const {JSDOM} = jsdom;
 
 const ANALYZE_FILE_COUNT_LIMIT = 10;
 
 const ENABLED_ACTIONS = {
-    reportsRenaming: 1,
-    tradesGetting: 1,
-    cashFlowGetting: 1,
+    rename: 0,
+    getCashFlow: 0,
+    getTrades: 0,
+    getAccountData: 0,
+    getOperations: 1,
+    saveData: 0,
 };
 
 function loadJsDom(filepath) {
@@ -44,17 +48,20 @@ async function runAnalyzing() {
         let filepath = `${folder}\\${file}`;
         let jsDom = await loadJsDom(filepath);
 
-        if (ENABLED_ACTIONS.reportsRenaming) {
+        if (ENABLED_ACTIONS.rename) {
             new ReportRenameAction(jsDom, filepath).tryRun();
         }
-
-        if (ENABLED_ACTIONS.cashFlowGetting) {
+        if (ENABLED_ACTIONS.getCashFlow) {
             let cashFlow = new ReportGetCashFlowAction(jsDom).tryRun();
             cashFlows.push(cashFlow);
         }
-
-        if (ENABLED_ACTIONS.tradesGetting) {
+        if (ENABLED_ACTIONS.getTrades) {
             const trades = new ReportGetTradesAction(jsDom).tryRun();
+            console.log(trades);
+        }
+        if (ENABLED_ACTIONS.getOperations) {
+            const operations = new ReportGetOperationsAction(jsDom).tryRun();
+            console.log(operations);
         }
 
         console.log(files.length - fileNo, filepath);
