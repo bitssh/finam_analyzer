@@ -29,12 +29,6 @@ const TRADE_FIELDS_FLOAT = [
     'go',
 ];
 
-const TRADE_FIELDS_SUMMARY = {
-    index: 2,
-    name: 'summary',
-    text: 'ИТОГО:',
-};
-
 class ReportGetTradesAction extends BaseReportTableReadAction {
 
     constructor(...args) {
@@ -50,9 +44,6 @@ class ReportGetTradesAction extends BaseReportTableReadAction {
         return TRADE_FIELDS_FLOAT;
     }
     getColIndex (columnName) {
-        if (columnName === TRADE_FIELDS_SUMMARY.name) {
-            return TRADE_FIELDS_SUMMARY.index;
-        }
         return super.getColIndex(columnName);
     }
     validateTable() {
@@ -62,12 +53,6 @@ class ReportGetTradesAction extends BaseReportTableReadAction {
         if (!headerRow || this.getRowCellValue(headerRow, 'date') !== 'Дата сделки') {
             throw new Error('trade date column not found');
         }
-    }
-    readRow (row) {
-        if (this.getRowCellValue(row, 'summary') === TRADE_FIELDS_SUMMARY.text) {
-            return {doBreak: true};
-        }
-        return super.readRow(row);
     }
 }
 

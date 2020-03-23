@@ -20,9 +20,9 @@ class BaseReportTableReadAction extends BaseReportAction {
         return _.get(captionNode, 'nodes[0].nextSibling');
     }
     validateTable() {
-        if (!this.tableNode) {
-            throw new Error('table not found');
-        }
+        // if (!this.tableNode) {
+        //     throw new Error('table not found');
+        // }
     }
     getColIndex (columnName) {
         return this.recordFields.findIndex((column) => column === columnName);
@@ -36,19 +36,22 @@ class BaseReportTableReadAction extends BaseReportAction {
         return result;
     }
     readRow (row) {
-        const record = {};
+        const result = {};
         for (let column of this.recordFields) {
-            record[column] = this.getRowCellValue(row, column);
+            result[column] = this.getRowCellValue(row, column);
         }
-        return {record};
+        return result;
     }
     run() {
         this.validateTable();
+        if (!this.tableNode)
+            return [];
         const records = [];
         for (let i = 1; i < this.tableNode.rows.length; i += 1) {
-            let { record, doBreak } = this.readRow(this.tableNode.rows[i]);
-            if (doBreak) break;
-            records.push(record);
+            let record = this.readRow(this.tableNode.rows[i]);
+            if (record[this.recordFields[0]]) {
+                records.push(record);
+            }
         }
         return records;
 
