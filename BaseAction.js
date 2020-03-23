@@ -6,8 +6,11 @@ class BaseAction {
         try {
             return this.run();
         } catch (err) {
-            console.error(`Running ${this.constructor.name} on failed: ${err.message}`);
+            console.error(`Running ${this.constructor.name} on "${this.reportName}" failed: ${err.message}`);
         }
+    }
+    get reportName () {
+        throw new Error('reportName getter must be implemented');
     }
 }
 

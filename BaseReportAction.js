@@ -21,13 +21,6 @@ class BaseReportAction extends BaseAction {
         }
         return this._reportName;
     }
-    tryRun () {
-        try {
-            return this.run();
-        } catch (err) {
-            console.error(`Running ${this.constructor.name} on "${this.reportName}" failed: ${err.message}`);
-        }
-    }
 }
 
 exports.BaseReportAction = BaseReportAction;
