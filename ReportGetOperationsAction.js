@@ -11,6 +11,12 @@ const OPERATION_FIELDS = [
     'comment',
 ];
 
+const OPERATION_FIELDS_FLOAT = [
+    'income',
+    'expense',
+    'value',
+];
+
 class ReportGetOperationsAction extends BaseReportTableReadAction {
 
     constructor(...args) {
@@ -21,6 +27,9 @@ class ReportGetOperationsAction extends BaseReportTableReadAction {
     }
     getRecordFieldNames() {
         return OPERATION_FIELDS;
+    }
+    getFloatRecordFieldNames() {
+        return OPERATION_FIELDS_FLOAT;
     }
 
 }

@@ -22,6 +22,12 @@ const TRADE_FIELDS = [
     'comment'
 ];
 
+const TRADE_FIELDS_FLOAT = [
+    'price',
+    'fee',
+    'margin',
+    'go',
+];
 
 const TRADE_FIELDS_SUMMARY = {
     index: 3,
@@ -40,6 +46,9 @@ class ReportGetTradesAction extends BaseReportTableReadAction {
     getRecordFieldNames () {
         return TRADE_FIELDS;
     }
+    getFloatRecordFieldNames () {
+        return TRADE_FIELDS_FLOAT;
+    }
     getColIndex (columnName) {
         if (columnName === TRADE_FIELDS_SUMMARY.name) {
             return TRADE_FIELDS_SUMMARY.index;
@@ -49,7 +58,7 @@ class ReportGetTradesAction extends BaseReportTableReadAction {
     validateTable() {
         super.validateTable();
 
-        const headerRow = _.get(this.getReportTableNode, 'rows[0]');
+        const headerRow = _.get(this.tableNode, 'rows[0]');
         if (!headerRow || this.getRowCellValue(headerRow, 'date') !== 'Дата сделки') {
             throw new Error('trade date column not found');
         }

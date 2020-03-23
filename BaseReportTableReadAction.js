@@ -7,6 +7,7 @@ class BaseReportTableReadAction extends BaseReportAction {
         super(...args);
         this.tableNode = this.getReportTableNode(this.getTableCaptionNodeText());
         this.recordFields = this.getRecordFieldNames();
+        this.recordFieldsFloat = this.getFloatRecordFieldNames();
     }
     getTableCaptionNodeText() {
         throw new Error('getTableCaptionNodeText method must be implemented');
@@ -28,7 +29,11 @@ class BaseReportTableReadAction extends BaseReportAction {
     }
     getRowCellValue(rowNode, columnName) {
         const cell = rowNode.cells[this.getColIndex(columnName)];
-        return cell ? cell.textContent : null;
+        let result = cell ? cell.textContent.trim() : null;
+        if (result && this.recordFieldsFloat.includes(columnName)) {
+            result = this.parseFloatValue(result);
+        }
+        return result;
     }
     readRow (row) {
         const record = {};

@@ -21,13 +21,17 @@ class ReportGetCashFlowAction extends BaseReportAction {
         return 1;
     }
 
+    getReportFloatValue (xPath) {
+        return this.parseFloatValue(this.getReportValue(xPath));
+    }
+
     run () {
         const rubReportDomTrIndex = this.rubReportDomTrIndex;
         return {
             reportName: this.reportName,
-            incoming: this.getReportValue(`/html/body/table[4]/tbody/tr[${rubReportDomTrIndex}]/td[2]`),
-            outgoing: this.getReportValue(`/html/body/table[4]/tbody/tr[${rubReportDomTrIndex}]/td[3]`),
-            margin: this.getReportValue(`/html/body/table[4]/tbody/tr[${rubReportDomTrIndex}]/td[10]`),
+            incoming: this.getReportFloatValue(`/html/body/table[4]/tbody/tr[${rubReportDomTrIndex}]/td[2]`),
+            outgoing: this.getReportFloatValue(`/html/body/table[4]/tbody/tr[${rubReportDomTrIndex}]/td[3]`),
+            margin: this.getReportFloatValue(`/html/body/table[4]/tbody/tr[${rubReportDomTrIndex}]/td[10]`),
             currencies: this.currencies,
         };
 
