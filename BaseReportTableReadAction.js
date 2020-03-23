@@ -30,8 +30,8 @@ class BaseReportTableReadAction extends BaseReportAction {
     getRowCellValue(rowNode, columnName) {
         const cell = rowNode.cells[this.getColIndex(columnName)];
         let result = cell ? cell.textContent.trim() : null;
-        if (result && this.recordFieldsFloat.includes(columnName)) {
-            result = this.parseFloatValue(result);
+        if (this.recordFieldsFloat.includes(columnName)) {
+            result = result ? this.parseFloatValue(result) : 0;
         }
         return result;
     }
