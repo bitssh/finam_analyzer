@@ -30,7 +30,7 @@ const TRADE_FIELDS_FLOAT = [
 ];
 
 const TRADE_FIELDS_SUMMARY = {
-    index: 3,
+    index: 2,
     name: 'summary',
     text: 'ИТОГО:',
 };
