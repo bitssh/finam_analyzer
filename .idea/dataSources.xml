@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+    <data-source source="LOCAL" name="fddemo.sdb" uuid="91013896-eb56-4fc6-be0a-683fe198d720">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/fddemo.sdb</jdbc-url>
+      <driver-properties>
+        <property name="date_class" value="INTEGER" />
+      </driver-properties>
+    </data-source>
+    <data-source source="LOCAL" name="reports.sdb" uuid="8aa67589-75e8-4603-b877-0986133ca1e6">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/reports.sdb</jdbc-url>
+      <driver-properties>
+        <property name="date_string_format" value="dd.MM.yyyy" />
+        <property name="date_class" value="INTEGER" />
+        <property name="date_precision" value="SECONDS" />
+      </driver-properties>
+    </data-source>
+  </component>
+</project>
