@@ -1,21 +1,34 @@
 const {BaseReportTableReadAction} = require('./BaseReportTableReadAction');
 
-const OPERATION_FIELDS = [
-    'date',
-    'type',
-    'code',
-    'currency',
-    'income',
-    'expense',
-    'value',
-    'comment',
-];
-
-const OPERATION_FIELDS_FLOAT = [
-    'income',
-    'expense',
-    'value',
-];
+const FIELDS_META = {
+    date: {
+        columnName: 'Дата',
+    },
+    type: {
+        columnName: 'Тип операции',
+    },
+    code: {
+        columnName: 'Финансовый инструмент',
+    },
+    currency: {
+        columnName: 'Валюта',
+    },
+    income: {
+        columnName: 'Зачислено',
+        numeric: true,
+    },
+    expense: {
+        columnName: 'Списано',
+        numeric: true,
+    },
+    value: {
+        columnName: 'Оценка',
+        numeric: true,
+    },
+    comment: {
+        columnName: 'Комментарии',
+    },
+};
 
 class ReportGetOperationsAction extends BaseReportTableReadAction {
 
@@ -25,11 +38,8 @@ class ReportGetOperationsAction extends BaseReportTableReadAction {
     getTableCaptionNodeText() {
         return 'Неторговые операции с денежными средствами';
     }
-    getRecordFieldNames() {
-        return OPERATION_FIELDS;
-    }
-    getFloatRecordFieldNames() {
-        return OPERATION_FIELDS_FLOAT;
+    getFieldsMeta() {
+        return FIELDS_META;
     }
 
 }

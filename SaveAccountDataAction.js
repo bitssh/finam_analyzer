@@ -22,7 +22,7 @@ class SaveAccountDataAction extends BaseAction {
      */
     constructor({name, cashFlow, trades, operations}) {
         super();
-        this.acctountName = name;
+        this.accountName = name;
         this.cashFlow = cashFlow ? cashFlow : [];
         this.trades = trades ? trades : [];
         this.operations = operations ? operations : [];
@@ -32,10 +32,12 @@ class SaveAccountDataAction extends BaseAction {
     run() {
         this.validateData();
         this.prepareData();
-        this.saveData().then();
+        this.saveData().catch(err => {
+            throw err;
+        });
     }
     get reportName () {
-        return this.acctountName;
+        return this.accountName;
     }
 
     validateData() {
@@ -51,7 +53,7 @@ class SaveAccountDataAction extends BaseAction {
 
     prepareData() {
         this.trades.forEach((trade) => {
-            trade.account_name = this.acctountName;
+            trade.account_name = this.accountName;
             trade.datetime = parseReportDateTime(trade.date, trade.time);
             delete trade.date;
             delete trade.time;
@@ -81,7 +83,7 @@ class SaveAccountDataAction extends BaseAction {
 
         this.dbOperations = this.operations.map((operation) => {
             return {
-                account_name: this.acctountName,
+                account_name: this.accountName,
                 datetime: parseReportDateTime(operation.date),
                 type: operation.type,
                 value: operation.value,
@@ -103,14 +105,21 @@ class SaveAccountDataAction extends BaseAction {
     }
 
     async saveData() {
-        for (const operation of this.dbOperations) {
-            await knex('operations').insert(operation);
-        }
-        for (const movement of this.dbTradeMovements) {
-            await knex('operations').insert(movement);
-        }
-        for (const trade of this.dbTrades) {
-            await knex('trades').insert(trade);
+        try {
+            await knex('operations').del();
+            await knex('trades').del();
+
+            for (const operation of this.dbOperations) {
+                await knex('operations').insert(operation);
+            }
+            for (const movement of this.dbTradeMovements) {
+                await knex('operations').insert(movement);
+            }
+            for (const trade of this.dbTrades) {
+                await knex('trades').insert(trade);
+            }
+        } catch (err) {
+            console.error(this.accountName + ' ' + err.message);
         }
     }
 }

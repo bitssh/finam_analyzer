@@ -1,32 +1,68 @@
 const {BaseReportTableReadAction} = require('./BaseReportTableReadAction');
 
-const TRADE_FIELDS = [
-    'date',
-    'time',
-    'market',
-    'code',
-    'operation',
-    'count',
-    'price',
-    'unit',
-    'option_price',
-    'fee',
-    'margin',
-    'go',
-    'currency',
-    'due_date',
-    'platform',
-    'orderNo',
-    'tradeNo',
-    'comment'
-];
-
-const TRADE_FIELDS_FLOAT = [
-    'price',
-    'fee',
-    'margin',
-    'go',
-];
+const FIELDS_META = {
+    date: {
+        columnName: 'Дата сделки',
+    },
+    time: {
+        columnName: 'Время сделки',
+    },
+    market: {
+        columnName: 'Вид договора',
+    },
+    code: {
+        columnName: 'Код',
+    },
+    operation: {
+        columnName: 'Вид сделки',
+    },
+    price: {
+        columnName: 'Цена исполнения/',
+        numeric: true,
+    },
+    count: {
+        columnName: 'Количество (шт.)',
+        numeric: true,
+    },
+    unit: {
+        columnName: 'Единица измерения цены',
+    },
+    option_price: {
+        columnName: 'Цена исполнения по опциону',
+        numeric: true,
+    },
+    fee: {
+        columnName: 'Вознаграждение',
+        numeric: true,
+    },
+    margin: {
+        columnName: 'Вариационная маржа',
+        numeric: true,
+    },
+    go: {
+        columnName: 'ГО',
+        numeric: true,
+    },
+    currency: {
+        columnName: 'Валюта',
+    },
+    due_date: {
+        columnName: 'Дата исполнения',
+        optional: true,
+    },
+    platform: {
+        columnName: 'Площадка',
+    },
+    tradeNo: {
+        columnName: '№ сделки',
+    },
+    orderNo: {
+        columnName: 'Номер биржевойзаявки',
+    },
+    comment: {
+        columnName: 'Комментарии',
+    },
+};
 
 class ReportGetTradesAction extends BaseReportTableReadAction {
 
@@ -36,11 +72,8 @@ class ReportGetTradesAction extends BaseReportTableReadAction {
     getTableCaptionNodeText() {
         return 'Торговые движения ПФИ, в т.ч. Комиссии';
     }
-    getRecordFieldNames () {
-        return TRADE_FIELDS;
-    }
-    getFloatRecordFieldNames () {
-        return TRADE_FIELDS_FLOAT;
+    getFieldsMeta () {
+        return FIELDS_META;
     }
     getColIndex (columnName) {
         return super.getColIndex(columnName);

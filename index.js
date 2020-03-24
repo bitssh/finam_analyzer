@@ -8,7 +8,7 @@ const {SaveAccountDataAction} = require("./SaveAccountDataAction");
 const {JSDOM} = jsdom;
 const _ = require('lodash');
 
-const ANALYZE_FILE_COUNT_LIMIT = 1;
+const ANALYZE_FILE_COUNT_LIMIT = 0;
 
 function loadJsDom(filepath) {
     return JSDOM.fromFile(filepath);
@@ -50,6 +50,9 @@ async function runAnalyzing() {
     let fileNo = 0;
     // files = ['КлЮ-947014.html'];
     for (let filepath of files) {
+        console.log(files.length - fileNo, filepath);
+        fileNo += 1;
+
         let jsDom = await loadJsDom(filepath);
 
         new ReportRenameAction(jsDom, filepath).tryRun();
@@ -62,10 +65,8 @@ async function runAnalyzing() {
         account.cashFlow = new ReportGetCashFlowAction(jsDom).tryRun();
         account.trades = new ReportGetTradesAction(jsDom).tryRun();
         account.operations = new ReportGetOperationsAction(jsDom).tryRun();
-         // new SaveAccountDataAction(account).tryRun();
+        new SaveAccountDataAction(account).tryRun();
 
-        console.log(files.length - fileNo, filepath);
-        fileNo += 1;
     }
 
     logCashFlows(cashFlows);
