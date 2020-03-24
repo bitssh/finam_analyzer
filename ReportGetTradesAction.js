@@ -1,5 +1,4 @@
 const {BaseReportTableReadAction} = require('./BaseReportTableReadAction');
-const _ = require('lodash');
 
 const TRADE_FIELDS = [
     'date',
@@ -49,10 +48,10 @@ class ReportGetTradesAction extends BaseReportTableReadAction {
     validateTable() {
         super.validateTable();
 
-        const headerRow = _.get(this.tableNode, 'rows[0]');
-        if (!headerRow || this.getRowCellValue(headerRow, 'date') !== 'Дата сделки') {
-            throw new Error('trade date column not found');
-        }
+        // const headerRow = _.get(this.tableNode, 'rows[0]');
+        // if (!headerRow || this.getRowCellValue(headerRow, 'date') !== 'Дата сделки') {
+        //     throw new Error('trade date column not found');
+        // }
     }
 }
 
