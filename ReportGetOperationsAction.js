@@ -3,7 +3,7 @@ const {BaseReportTableReadAction} = require('./BaseReportTableReadAction');
 const OPERATION_FIELDS = [
     'date',
     'type',
-    'instrument',
+    'code',
     'currency',
     'income',
     'expense',
