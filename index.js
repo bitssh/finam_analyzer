@@ -6,6 +6,7 @@ const {ReportGetOperationsAction} = require("./ReportGetOperationsAction");
 const {ReportGetCashFlowAction} = require("./ReportGetCashFlowAction");
 const {SaveAccountDataAction} = require("./SaveAccountDataAction");
 const {JSDOM} = jsdom;
+const _ = require('lodash');
 
 const ANALYZE_FILE_COUNT_LIMIT = 1;
 
@@ -30,24 +31,38 @@ function logCashFlows(cashFlows) {
 }
 
 async function runAnalyzing() {
-    const folder = 'C:\\Users\\Ilya\\Downloads\\мик 2019';
+    const getFileList = (dirPath, recursively) =>
+        _.flatten(fs.readdirSync(dirPath, {withFileTypes: true})
+            .map(dirent => {
+                const path = `${dirPath}/${dirent.name}`;
+                return dirent.isDirectory()  ? getFileList(path, recursively) : path;
+            })
+        );
+
+    let path = 'C:\\Users\\Ilya\\Work\\Работа\\мик 2019\\reports';
+    path = path.split('\\').join('/');
+
+    let files = getFileList(path, true).slice(-ANALYZE_FILE_COUNT_LIMIT);
+    // console.log(files);
+
     const cashFlows = [];
-    let files = fs.readdirSync(folder).slice(-ANALYZE_FILE_COUNT_LIMIT);
 
     let fileNo = 0;
     // files = ['КлЮ-947014.html'];
-    for (let file of files) {
-        let filepath = `${folder}\\${file}`;
+    for (let filepath of files) {
         let jsDom = await loadJsDom(filepath);
 
+        new ReportRenameAction(jsDom, filepath).tryRun();
+
         let account = {};
-        let reportRenameAction = new ReportRenameAction(jsDom, filepath);
-        reportRenameAction.tryRun();
-        account.name = reportRenameAction.reportName;
+        let reportGetCashFlowAction = new ReportGetCashFlowAction(jsDom, filepath);
+        reportGetCashFlowAction.tryRun();
+        account.name = reportGetCashFlowAction.reportName;
+
         account.cashFlow = new ReportGetCashFlowAction(jsDom).tryRun();
         account.trades = new ReportGetTradesAction(jsDom).tryRun();
         account.operations = new ReportGetOperationsAction(jsDom).tryRun();
-        new SaveAccountDataAction(account).tryRun();
+         // new SaveAccountDataAction(account).tryRun();
 
         console.log(files.length - fileNo, filepath);
         fileNo += 1;
