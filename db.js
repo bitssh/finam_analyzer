@@ -3,6 +3,7 @@ const knex = require('knex')({
     connection: {
         filename: './reports.sdb',
     },
+    useNullAsDefault: true,
 });
 
 exports.knex = knex;
