@@ -46,7 +46,7 @@ const FIELDS_META = {
     currency: {
         columnName: 'Валюта',
     },
-    due_date: {
+    date_execution: {
         columnName: 'Дата исполнения',
         optional: true,
     },

@@ -55,6 +55,7 @@ class SaveAccountDataAction extends BaseAction {
         this.trades.forEach((trade) => {
             trade.account_name = this.accountName;
             trade.datetime = parseReportDateTime(trade.date, trade.time);
+            trade.date_execution = trade.date_execution ? parseReportDateTime(trade.date_execution) : trade.datetime;
             delete trade.date;
             delete trade.time;
         });
@@ -88,7 +89,6 @@ class SaveAccountDataAction extends BaseAction {
                 type: operation.type,
                 value: operation.value,
                 comment: operation.comment,
-                currency: operation.currency,
                 code: operation.code,
                 non_trade: 1,
             }
@@ -96,8 +96,9 @@ class SaveAccountDataAction extends BaseAction {
 
         this.dbTrades = this.trades.map((trade) => {
             let result = {};
+
             for (let key of Object.keys(trade)) {
-                if (!['go', 'due_date', 'option_price'].includes(key))
+                if (!['go', 'option_price'].includes(key))
                     result[key] = trade[key];
             }
             return result;
@@ -106,8 +107,6 @@ class SaveAccountDataAction extends BaseAction {
 
     async saveData() {
         try {
-            await knex('operations').del();
-            await knex('trades').del();
 
             for (const operation of this.dbOperations) {
                 await knex('operations').insert(operation);

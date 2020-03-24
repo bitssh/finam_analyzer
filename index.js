@@ -7,6 +7,7 @@ const {ReportGetCashFlowAction} = require("./ReportGetCashFlowAction");
 const {SaveAccountDataAction} = require("./SaveAccountDataAction");
 const {JSDOM} = jsdom;
 const _ = require('lodash');
+const {knex} = require("./db");
 
 const ANALYZE_FILE_COUNT_LIMIT = 0;
 
@@ -46,6 +47,9 @@ async function runAnalyzing() {
     // console.log(files);
 
     const cashFlows = [];
+
+    await knex('operations').del();
+    await knex('trades').del();
 
     let fileNo = 0;
     // files = ['КлЮ-947014.html'];
