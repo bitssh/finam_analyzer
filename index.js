@@ -7,7 +7,7 @@ const {ReportGetCashFlowAction} = require("./ReportGetCashFlowAction");
 const {SaveAccountDataAction} = require("./SaveAccountDataAction");
 const {JSDOM} = jsdom;
 
-const ANALYZE_FILE_COUNT_LIMIT = 10;
+const ANALYZE_FILE_COUNT_LIMIT = 1;
 
 function loadJsDom(filepath) {
     return JSDOM.fromFile(filepath);
@@ -32,10 +32,10 @@ function logCashFlows(cashFlows) {
 async function runAnalyzing() {
     const folder = 'C:\\Users\\Ilya\\Downloads\\мик 2019';
     const cashFlows = [];
-    const files = fs.readdirSync(folder).slice(-ANALYZE_FILE_COUNT_LIMIT);
+    let files = fs.readdirSync(folder).slice(-ANALYZE_FILE_COUNT_LIMIT);
 
     let fileNo = 0;
-
+    // files = ['КлЮ-947014.html'];
     for (let file of files) {
         let filepath = `${folder}\\${file}`;
         let jsDom = await loadJsDom(filepath);
