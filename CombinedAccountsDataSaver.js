@@ -1,4 +1,3 @@
-const {BaseAction} = require("./BaseAction");
 const _ = require('lodash');
 const {knex} = require("./db");
 const moment = require('moment');
@@ -12,40 +11,46 @@ function parseReportDateTime(date, time) {
         .utcOffset(REPORT_UTC_OFFSET, true).utcOffset(REPORT_UTC_OFFSET, true).unix();
 }
 
-class SaveAccountDataAction extends BaseAction {
+class CombinedAccountsDataSaver  {
     /**
      *
-     * @param {string} name
-     * @param {Array} cashFlow
-     * @param {Array <{tradeNo: number, margin: number, date: string, time: string}>} trades
-     * @param {Array} operations
+     * @param {Object} accounts
      */
-    constructor({name, cashFlow, trades, operations}) {
-        super();
-        this.accountName = name;
-        this.cashFlow = cashFlow ? cashFlow : [];
-        this.trades = trades ? trades : [];
-        this.operations = operations ? operations : [];
+    constructor(accounts) {
+        this.trades = [];
+        this.operations = [];
+        this.cashFlow = {
+            incoming: 0,
+            outgoing: 0,
+            margin: 0,
+        };
+
+        accounts.forEach(account => {
+            for (let trade of account.trades) trade.account_name = account.name;
+            this.trades.push(...account.trades);
+
+            for (let operation of account.operations) operation.account_name = account.name;
+            this.operations.push(...account.operations);
+
+            this.cashFlow.incoming += account.cashFlow.incoming;
+            this.cashFlow.outgoing += account.cashFlow.outgoing;
+            this.cashFlow.margin += account.cashFlow.margin;
+        });
 
     }
 
-    run() {
+    async run() {
         this.validateData();
         this.prepareData();
-        this.saveData().catch(err => {
-            throw err;
-        });
-    }
-    get reportName () {
-        return this.accountName;
+        await this.saveData();
     }
 
     validateData() {
         const tradesMargin = +this.trades
             .reduce((sum, item) => {
                 return sum + item.margin
-            }, 0).toFixed(2);
-        if (this.cashFlow.margin && this.cashFlow.margin !== tradesMargin) {
+            }, 0);
+        if (this.cashFlow.margin && this.cashFlow.margin.toFixed(2) !== String(tradesMargin.toFixed(2))) {
             throw new Error(
                 `Cash flow margin "${this.cashFlow.margin}" does not match trades sum margin "${tradesMargin}"`);
         }
@@ -53,7 +58,6 @@ class SaveAccountDataAction extends BaseAction {
 
     prepareData() {
         this.trades.forEach((trade) => {
-            trade.account_name = this.accountName;
             trade.datetime = parseReportDateTime(trade.date, trade.time);
             trade.date_execution = trade.date_execution ? parseReportDateTime(trade.date_execution) : trade.datetime;
             delete trade.date;
@@ -84,11 +88,12 @@ class SaveAccountDataAction extends BaseAction {
 
         this.dbOperations = this.operations.map((operation) => {
             return {
-                account_name: this.accountName,
+                account_name: operation.account_name,
                 datetime: parseReportDateTime(operation.date),
                 type: operation.type,
                 value: operation.value,
                 comment: operation.comment,
+                currency: operation.currency,
                 code: operation.code,
                 non_trade: 1,
             }
@@ -107,20 +112,15 @@ class SaveAccountDataAction extends BaseAction {
 
     async saveData() {
         try {
-
-            for (const operation of this.dbOperations) {
-                await knex('operations').insert(operation);
-            }
-            for (const movement of this.dbTradeMovements) {
-                await knex('operations').insert(movement);
-            }
-            for (const trade of this.dbTrades) {
-                await knex('trades').insert(trade);
-            }
+            await knex('operations').del();
+            await knex('trades').del();
+            await knex.batchInsert('operations', this.dbOperations, 100);
+            await knex.batchInsert('operations', this.dbTradeMovements, 100);
+            await knex.batchInsert('trades', this.dbTrades, 30);
         } catch (err) {
-            console.error(this.accountName + ' ' + err.message);
+            console.error(err.message);
         }
     }
 }
 
-exports.SaveAccountDataAction = SaveAccountDataAction;
+exports.CombinedAccountsDataSaver = CombinedAccountsDataSaver;
